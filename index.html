@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Train Scheduler</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+
+<body>
+    <div class="container">
+        <div class="jumbotron jumbotron-fluid text-center">
+            <div class="container">
+                <h1 class="display-4">Anytime is Train Time</h1>
+                <p class="lead">Choo Choo. Chee Chee.</p>
+            </div>
+        </div>
+        <div class="card mb-3">
+            <div class="card-header">
+                Current Train Schedule
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Train Name</th>
+                            <th scope="col">Destination</th>
+                            <th scope="col">Frequency (min)</th>
+                            <th scope="col">Next Arrival</th>
+                            <th scope="col">Minutes Away</th>
+                        </tr>
+                    </thead>
+                    <tbody id="display-info">
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card mb-3">
+            <div class="card-header">
+                Add Train
+            </div>
+            <div class="card-body">
+                <form>
+                    <div class="form-group">
+                        <label for="name-input">Train Name</label>
+                        <input type="text" class="form-control" id="name-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="destination-input">Destination</label>
+                        <input type="text" class="form-control" id="destination-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="time-input">First Train Time (HH:mm - military time)</label>
+                        <input type="text" class="form-control" id="time-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="frequency-input">Frequency (min)</label>
+                        <input type="text" class="form-control" id="frequency-input">
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="add-train">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+
+<script src="https://code.jquery.com/jquery-3.4.1.js" integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU="
+    crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/6.1.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/6.1.0/firebase-database.js"></script>
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        console.log("ready!");
+        // Your web app's Firebase configuration
+        var firebaseConfig = {
+            apiKey: "AIzaSyCCiVasGVXVVcBZBMuNGXeCR40l5n7jWRY",
+            authDomain: "train-scheduler-02.firebaseapp.com",
+            databaseURL: "https://train-scheduler-02.firebaseio.com",
+            projectId: "train-scheduler-02",
+            storageBucket: "train-scheduler-02.appspot.com",
+            messagingSenderId: "969786427328",
+            appId: "1:969786427328:web:1abdfeebc950b194"
+        };
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        var database = firebase.database();
+
+        // Initial Values
+        var name = "";
+        var destination = "";
+        var firstTrain = 0;
+        var frequency = 0;
+
+        // Capture Button Click
+        $("#add-train").on("click", function (event) {
+            event.preventDefault();
+
+            name = $("#name-input").val().trim();
+            destination = $("#destination-input").val().trim();
+            firstTrain = moment($("#time-input").val().trim(), "HH:mm").format("X");
+            frequency = $("#frequency-input").val().trim();
+
+            var newTrain = {
+                name: name,
+                destination: destination,
+                firstTrain: firstTrain,
+                frequency: frequency
+            }
+
+            console.log(newTrain)
+
+            database.ref().push(newTrain);
+
+            $("#name-input").val("");
+            $("#destination-input").val("");
+            $("#time-input").val("");
+            $("#frequency-input").val("")
+
+        });
+
+        database.ref().on("child_added", function (childSnapshot) {
+            console.log(childSnapshot.val());
+
+            // Store everything into a variable.
+            var name = childSnapshot.val().name;
+            var destination = childSnapshot.val().destination;
+            var firstTrain = childSnapshot.val().firstTrain;
+            var frequency = childSnapshot.val().frequency;
+
+            // Train info
+            console.log(name);
+            console.log(destination);
+            console.log(firstTrain);
+            console.log(frequency);
+
+            // Prettify the train start time
+            var firstTrainPretty = moment.unix(firstTrain).format("HH:mm");
+
+            // To calculate the next arrival
+            //var nextArrival = moment().diff(moment(firstTrain, "X"), "months");
+            //console.log(nextArrival);
+
+            // Calculate the total billed rate
+            //var minAway = moment().diff(moment(firstTrain, "X"), "minutes");
+            //console.log(empBilled);
+
+            // Create the new row
+            var newRow = $("<tr>").append(
+                $("<td>").text(name),
+                $("<td>").text(destination),
+                $("<td>").text(frequency),
+                //$("<td>").text(nextArrival),
+                //$("<td>").text(minAway),
+            );
+
+            // Append the new row to the table
+            $("#display-info").append(newRow);
+        });
+
+
+    });
+</script>
+
+</html>
