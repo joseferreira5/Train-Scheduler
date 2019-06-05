@@ -141,23 +141,40 @@
             console.log(frequency);
 
             // Prettify the train start time
-            var firstTrainPretty = moment.unix(firstTrain).format("HH:mm");
+            //var firstTrainPretty = moment.unix(firstTrain).format("HH:mm");
 
-            // To calculate the next arrival
-            //var nextArrival = moment().diff(moment(firstTrain, "X"), "months");
-            //console.log(nextArrival);
+            // First Time (pushed back 1 year to make sure it comes before current time)
+            var firstTimeConverted = moment(firstTrain, "HH:mm").subtract(1, "years");
+            console.log(firstTimeConverted);
 
-            // Calculate the total billed rate
-            //var minAway = moment().diff(moment(firstTrain, "X"), "minutes");
-            //console.log(empBilled);
+            // Current Time
+            var currentTime = moment();
+            console.log("CURRENT TIME: " + moment(currentTime).format("hh:mm"));
+
+            // Difference between the times
+            var diffTime = moment().diff(moment(firstTimeConverted), "minutes");
+            console.log("DIFFERENCE IN TIME: " + diffTime);
+
+            // Time apart (remainder)
+            var tRemainder = diffTime % frequency;
+            console.log(tRemainder);
+
+            // Minute Until Train
+            var tMinutesTillTrain = frequency - tRemainder;
+            console.log("MINUTES TILL TRAIN: " + tMinutesTillTrain);
+
+            // Next Train
+            var nextTrain = moment().add(tMinutesTillTrain, "minutes");
+            console.log("ARRIVAL TIME: " + moment(nextTrain).format("hh:mm"));
+
 
             // Create the new row
             var newRow = $("<tr>").append(
                 $("<td>").text(name),
                 $("<td>").text(destination),
                 $("<td>").text(frequency),
-                //$("<td>").text(nextArrival),
-                //$("<td>").text(minAway),
+                $("<td>").text(nextTrain),
+                $("<td>").text(tMinutesTillTrain),
             );
 
             // Append the new row to the table
